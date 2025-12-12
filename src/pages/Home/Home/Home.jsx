@@ -4,6 +4,7 @@ import Featured from '../Featured/Featured';
 import Contact from '../Contact/Contact';
 
 
+
 const Home = () => {
     return (
       <div>

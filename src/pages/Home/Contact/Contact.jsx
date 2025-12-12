@@ -42,7 +42,7 @@ const Contact = () => {
         <div className="mt-8 text-center text-gray-700 flex flex-col items-center">
           <FaPhoneAlt className="text-red-500 text-2xl mb-2" />
           <p className="text-lg font-medium">Phone: +880 171 256 7890</p>
-          <p className="text-lg font-medium">Phone: +880 161 256 7890</p>
+          <p className="text-lg font-medium">Phone: +880 161 255 7890</p>
         </div>
       </div>
     </section>
