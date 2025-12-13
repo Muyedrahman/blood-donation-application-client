@@ -1,22 +1,29 @@
-// import React from 'react';
+import React from 'react';
 
-// const Register = () => {
-//     return (
-//       <div>
-//         <form>
-//           <fieldset className="fieldset">
-//             <label className="label">Email</label>
-//             <input type="email" className="input" placeholder="Email" />
-//             <label className="label">Password</label>
-//             <input type="password" className="input" placeholder="Password" />
-//             <div>
-//               <a className="link link-hover">Forgot password?</a>
-//             </div>
-//             <button className="btn btn-neutral mt-4"> Register </button>
-//           </fieldset>
-//         </form>
-//       </div>
-//     );
-// };
+const Register = () => {
+    return (
+      <div>
+        <form>
+          <fieldset className="fieldset">
+            <label className="label">Name</label>
+            <input
+            
+              type="text"
+              className="input input-bordered w-full bg-red-50/30 mt-1 rounded-xl"
+              placeholder="Your Name"
+            />
+            <label className="label">Email</label>
+            <input type="email" className="input" placeholder="Email" />
+            <label className="label">Password</label>
+            <input type="password" className="input" placeholder="Password" />
+            <div>
+              <a className="link link-hover">Forgot password ?</a>
+            </div>
+            <button className="btn btn-neutral mt-4">Register </button>
+          </fieldset>
+        </form>
+      </div>
+    );
+};
 
-// export default Register;
+export default Register;
