@@ -9,15 +9,18 @@ const NavBar = () => {
           <NavLink to="/">Home</NavLink>
         </li>
         <li>
-          <NavLink to="/donors">Donors</NavLink>
+          <NavLink to="/donors">Donation Requests</NavLink>
         </li>
 
         <li>
-          <NavLink to="/become-donor">Become Donor</NavLink>
+          <NavLink to="/become-donor">Funding</NavLink>
         </li>
 
         <li>
-          <NavLink to="/become-donor">Request </NavLink>
+          <NavLink to="/become-donor">Search</NavLink>
+        </li>
+        <li>
+          <NavLink to="/become-donor"></NavLink>
         </li>
       </>
     );
@@ -62,9 +65,18 @@ const NavBar = () => {
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1">{links}</ul>
         </div>
-        <div className="navbar-end">
-          <a className="btn">Login</a>
-        </div>
+        <NavLink
+          to="/login"
+          className="btn hover:text-red-400 transition cursor-pointer"
+        >
+          Login
+        </NavLink>
+        <NavLink
+          to="/register"
+          className="btn hover:text-red-400 transition cursor-pointer"
+        >
+          Register
+        </NavLink>
       </div>
     );
 };
