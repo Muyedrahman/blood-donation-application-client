@@ -1,6 +1,8 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
+import useAuth from "../../../hooks/useAuth";
+import SocialLogin from "../SocialLogin/SocialLogin";
 
 const Login = () => {
   const {
@@ -9,10 +11,19 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
+  const { signInUser } = useAuth();
+
   const handleLogin = async (data) => {
     console.log("Login form data:", data);
+    signInUser(data.email, data.password)
+    .then(result =>{
+        console.log(result.user)
+    })
+    .catch(error =>{
+        console.log(error)
+    })
 
-    // এখানে তুমি API call করতে পারো
+    // এখানে ami API call করতে pari
     // fetch("YOUR_SERVER_API/login", {
     //   method: "POST",
     //   headers: { "Content-Type": "application/json" },
@@ -27,7 +38,8 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-base-200">
       <div className="card w-full max-w-sm shadow-xl bg-base-100">
         <div className="card-body">
-          <h2 className="text-2xl font-bold text-center">Login Now</h2>
+          <h2 className="text-2xl font-bold text-center">Welcome back </h2>
+          <p className=" font-bold text-center">Please Login </p>
 
           {/* Login Form */}
           <form
@@ -39,7 +51,7 @@ const Login = () => {
               <label className="font-semibold">Email</label>
               <input
                 type="email"
-                {...register("email", { required: "Email is required" })}
+                {...register("email", { required: true })}
                 className="input input-bordered bg-red-50/30 w-full rounded-md mt-1"
                 placeholder="Enter email"
               />
@@ -53,13 +65,17 @@ const Login = () => {
               <label className="font-semibold">Password</label>
               <input
                 type="password"
-                {...register("password", { required: "Password is required" })}
+                {...register("password", { required: true, minLength: 6 })}
                 className="input input-bordered bg-red-50/30 w-full rounded-md mt-1"
-                placeholder="***"
+                placeholder="Password"
               />
               {errors.password && (
                 <p className="text-red-500 text-sm">
-                  {errors.password.message}
+                  {errors.password?.type === "minLength" && (
+                    <p className="text-red-500">
+                      Password must be 6 characters or long
+                    </p>
+                  )}
                 </p>
               )}
             </div>
@@ -74,20 +90,13 @@ const Login = () => {
 
           {/* Register Link */}
           <p className="text-center mt-4">
-            Don't have an account?{" "}
+            Don't have an account?
             <a href="/register" className="text-red-500 underline">
               Register
             </a>
           </p>
-
-          {/* Divider */}
-          <div className="divider">OR</div>
-
           {/* Google Login */}
-          <button className="btn py-3 rounded-md font-semibold hover:bg-red-600 transition mt-4 btn-outline w-full flex items-center gap-2">
-            <FcGoogle className="text-xl" />
-            Continue with Google
-          </button>
+          <SocialLogin></SocialLogin>
         </div>
       </div>
     </div>

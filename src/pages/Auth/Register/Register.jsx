@@ -1,26 +1,32 @@
 import React from "react";
 import { useForm } from "react-hook-form";
+import useAuth from "../../../hooks/useAuth";
+import SocialLogin from "../SocialLogin/SocialLogin";
 
 const Register = () => {
   const {
     register,
     handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm();
+    watch,formState: { errors }} = useForm();
+    const { registerUser } = useAuth();
 
   const handleRegistration = (data) => {
-    
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("email", data.email);
-    formData.append("password", data.password);
-    formData.append("bloodGroup", data.bloodGroup);
-    formData.append("district", data.district);
-    formData.append("upozila", data.upozila);
-    formData.append("avatar", data.avatar[0]); 
-
-    console.log("FormData to submit:", formData);
+    // const formData = new FormData();
+    // formData.append("name", data.name);
+    // formData.append("email", data.email);
+    // formData.append("password", data.password);
+    // formData.append("bloodGroup", data.bloodGroup);
+    // formData.append("district", data.district);
+    // formData.append("upozila", data.upozila);
+    // formData.append("avatar", data.avatar[0]); 
+    // console.log("FormData to submit:", formData);
+    registerUser(data.email, data.password)
+    .then(result =>{
+        console.log(result.user);
+    })
+    .catch(error =>{
+        console.log(error)
+    } )
 
     // API call 
     // fetch("YOUR_SERVER_API", { method: "POST", body: formData })
@@ -105,11 +111,10 @@ const Register = () => {
           <div>
             <label className="label">District</label>
             <select
-              {...register("district", { required: "District is required" })}
+              //   {...register("district", { required: "District is required" })}
               className="select select-bordered w-full"
             >
               <option value="">Select District</option>
-           
             </select>
             {errors.district && (
               <p className="text-red-500 text-sm">{errors.district.message}</p>
@@ -120,11 +125,10 @@ const Register = () => {
           <div>
             <label className="label">Upazila</label>
             <select
-              {...register("upozila", { required: "Upazila is required" })}
+              //   {...register("upozila", { required: "Upazila is required" })}
               className="select select-bordered w-full"
             >
               <option value="">Select Upazila</option>
-        
             </select>
             {errors.upozila && (
               <p className="text-red-500 text-sm">{errors.upozila.message}</p>
@@ -179,6 +183,8 @@ const Register = () => {
             </a>
           </p>
         </form>
+        {/* Google Login */}
+        <SocialLogin></SocialLogin>
       </div>
     </div>
   );
