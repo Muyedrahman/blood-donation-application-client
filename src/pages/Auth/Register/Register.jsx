@@ -1,35 +1,72 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
+import axios from "axios";
 import useAuth from "../../../hooks/useAuth";
 import SocialLogin from "../SocialLogin/SocialLogin";
 
 const Register = () => {
+  const { districts, upazilas } = useLoaderData();
+
+  //  JSON ar modda main --------> data
+  const districtList = districts[2].data;
+  const upazilaList = upazilas[2].data;
+
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [filteredUpazilas, setFilteredUpazilas] = useState([]);
+
   const {
     register,
     handleSubmit,
-    watch,formState: { errors }} = useForm();
-    const { registerUser } = useAuth();
+    watch,
+    formState: { errors },
+  } = useForm();
+
+  const password = watch("password");
+
+  const { registerUser, updateUserProfile } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  //  a. District select ------> b.Upazila filter
+  useEffect(() => {
+    if (!selectedDistrict) {
+      setFilteredUpazilas([]);
+      return;
+    }
+
+    const district = districtList.find((d) => d.name === selectedDistrict);
+
+    if (district) {
+      const matched = upazilaList.filter((u) => u.district_id === district.id);
+      setFilteredUpazilas(matched);
+    }
+  }, [selectedDistrict]);
 
   const handleRegistration = (data) => {
-    // const formData = new FormData();
-    // formData.append("name", data.name);
-    // formData.append("email", data.email);
-    // formData.append("password", data.password);
-    // formData.append("bloodGroup", data.bloodGroup);
-    // formData.append("district", data.district);
-    // formData.append("upozila", data.upozila);
-    // formData.append("avatar", data.avatar[0]); 
-    // console.log("FormData to submit:", formData);
-    registerUser(data.email, data.password)
-    .then(result =>{
-        console.log(result.user);
-    })
-    .catch(error =>{
-        console.log(error)
-    } )
+    const imageFile = data.avatar[0];
 
-    // API call 
-    // fetch("YOUR_SERVER_API", { method: "POST", body: formData })
+    registerUser(data.email, data.password)
+      .then(() => {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+        const imgURL = `https://api.imgbb.com/1/upload?key=${
+          import.meta.env.VITE_image_host_key
+        }`;
+
+        axios.post(imgURL, formData).then((res) => {
+          const profile = {
+            displayName: data.name,
+            photoURL: res.data.data.url,
+          };
+
+          updateUserProfile(profile).then(() => {
+            navigate(location.state || "/");
+          });
+        });
+      })
+      .catch((err) => console.log(err));
   };
 
   return (
@@ -41,288 +78,116 @@ const Register = () => {
 
         <form onSubmit={handleSubmit(handleRegistration)} className="space-y-3">
           {/* Name */}
-          <div>
-            <label className="label">Name</label>
-            <input
-              type="text"
-              {...register("name", { required: "Name is required" })}
-              className="input input-bordered w-full"
-              placeholder="Your Name"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name.message}</p>
-            )}
-          </div>
+          <input
+            {...register("name", { required: "Name is required" })}
+            className="input input-bordered w-full"
+            placeholder="Name"
+          />
+          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
 
           {/* Email */}
-          <div>
-            <label className="label">Email</label>
-            <input
-              type="email"
-              {...register("email", { required: "Email is required" })}
-              className="input input-bordered w-full"
-              placeholder="Email"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
-            )}
-          </div>
+          <input
+            type="email"
+            {...register("email", { required: "Email is required" })}
+            className="input input-bordered w-full"
+            placeholder="Email"
+          />
 
           {/* Avatar */}
-          <div>
-            <label className="label">Avatar</label>
-            <input
-              type="file"
-              {...register("avatar", { required: "Avatar is required" })}
-              className="file-input file-input-bordered w-full"
-            />
-            {errors.avatar && (
-              <p className="text-red-500 text-sm">{errors.avatar.message}</p>
-            )}
-          </div>
+          <input
+            type="file"
+            {...register("avatar", { required: "Avatar is required" })}
+            className="file-input w-full"
+          />
 
           {/* Blood Group */}
-          <div>
-            <label className="label">Blood Group</label>
-            <select
-              {...register("bloodGroup", {
-                required: "Blood group is required",
-              })}
-              className="select select-bordered w-full"
-            >
-              <option value="">Select Blood Group</option>
-              <option>A+</option>
-              <option>A-</option>
-              <option>B+</option>
-              <option>B-</option>
-              <option>AB+</option>
-              <option>AB-</option>
-              <option>O+</option>
-              <option>O-</option>
-            </select>
-            {errors.bloodGroup && (
-              <p className="text-red-500 text-sm">
-                {errors.bloodGroup.message}
-              </p>
-            )}
-          </div>
+          <select
+            {...register("bloodGroup", { required: "Blood group is required" })}
+            className="select select-bordered w-full"
+          >
+            <option value="">Select Blood Group</option>
+            <option>A+</option>
+            <option>A-</option>
+            <option>B+</option>
+            <option>B-</option>
+            <option>AB+</option>
+            <option>AB-</option>
+            <option>O+</option>
+            <option>O-</option>
+          </select>
 
           {/* District */}
-          <div>
-            <label className="label">District</label>
-            <select
-              //   {...register("district", { required: "District is required" })}
-              className="select select-bordered w-full"
-            >
-              <option value="">Select District</option>
-            </select>
-            {errors.district && (
-              <p className="text-red-500 text-sm">{errors.district.message}</p>
-            )}
-          </div>
+          <select
+            {...register("district", { required: "District is required" })}
+            className="select select-bordered w-full"
+            onChange={(e) => setSelectedDistrict(e.target.value)}
+          >
+            <option value="">Select District</option>
+            {districtList.map((d) => (
+              <option key={d.id} value={d.name}>
+                {d.name}
+              </option>
+            ))}
+          </select>
 
           {/* Upazila */}
-          <div>
-            <label className="label">Upazila</label>
-            <select
-              //   {...register("upozila", { required: "Upazila is required" })}
-              className="select select-bordered w-full"
-            >
-              <option value="">Select Upazila</option>
-            </select>
-            {errors.upozila && (
-              <p className="text-red-500 text-sm">{errors.upozila.message}</p>
-            )}
-          </div>
+          <select
+            {...register("upazila", { required: "Upazila is required" })}
+            className="select select-bordered w-full"
+          >
+            <option value="">Select Upazila</option>
+            {filteredUpazilas.map((u) => (
+              <option key={u.id} value={u.name}>
+                {u.name}
+              </option>
+            ))}
+          </select>
 
           {/* Password */}
-          <div>
-            <label className="label">Password</label>
-            <input
-              type="password"
-              {...register("password", {
-                required: "Password is required",
-                minLength: { value: 6, message: "Minimum 6 characters" },
-              })}
-              className="input input-bordered w-full"
-              placeholder="Password"
-            />
-            {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password.message}</p>
-            )}
-          </div>
+          <input
+            type="password"
+            {...register("password", {
+              required: "Password is required",
+              minLength: { value: 6, message: "Minimum 6 characters" },
+            })}
+            className="input input-bordered w-full"
+            placeholder="Password"
+          />
+          {errors.password && (
+            <p className="text-red-500">{errors.password.message}</p>
+          )}
 
           {/* Confirm Password */}
-          <div>
-            <label className="label">Confirm Password</label>
-            <input
-              type="password"
-              {...register("confirmPassword", {
-                required: "Confirm your password",
-                validate: (value) =>
-                  value === watch("password") || "Passwords do not match",
-              })}
-              className="input input-bordered w-full"
-              placeholder="Confirm Password"
-            />
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
+          <input
+            type="password"
+            {...register("confirmPassword", {
+              required: "Confirm password is required",
+              validate: (value) =>
+                value === password || "Password does not match",
+            })}
+            className="input input-bordered w-full"
+            placeholder="Confirm Password"
+          />
+          {errors.confirmPassword && (
+            <p className="text-red-500">{errors.confirmPassword.message}</p>
+          )}
 
-          <button className="bg-red-500 text-white py-3 rounded-md font-semibold hover:bg-red-600 transition w-full mt-4">
+          <button className="bg-red-500 text-white py-3 rounded-md w-full">
             Register
           </button>
 
-          <p className="text-center mt-4">
-            Already have an account?
-            <a href="/login" className="text-red-500 underline">
+          <p className="text-center">
+            Already have account?
+            <Link to="/login" className="text-red-500 underline">
               Login
-            </a>
+            </Link>
           </p>
         </form>
-        {/* Google Login */}
-        <SocialLogin></SocialLogin>
+
+        <SocialLogin />
       </div>
     </div>
   );
 };
 
 export default Register;
-
-// import React from "react";
-// import { useForm } from "react-hook-form";
-
-// const Register = () => {
-//     const { register, handleSubmit } = useForm();
-
-//     const handleRegistration = (data) =>{
-//         console.log('Afterreg isrtrfgghb ',data)
-
-//     }
-
-//   return (
-//     <div className="flex justify-center items-center min-h-screen bg-gray-50">
-//       <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow">
-//         <h2 className="text-2xl font-bold text-center mb-6">
-//           Register as Donor
-//         </h2>
-
-//         <form onSubmit={handleSubmit(handleRegistration)} className="space-y-3">
-//           {/* Name */}
-//           <div>
-//             <label className="label">Name</label>
-//             <input
-//               type="text"
-//               {...register("name")}
-//               className="input input-bordered w-full"
-//               placeholder="Your Name"
-//             />
-//           </div>
-
-//           {/* Email */}
-//           <div>
-//             <label className="label">Email</label>
-//             <input
-//               type="email"
-//               {...register('email', {required:true})}
-//               className="input input-bordered w-full"
-//               placeholder="Email"
-//             />
-//           </div>
-
-//           {/* Avatar */}
-//           <div>
-//             <label className="label">Avatar</label>
-//             <input
-//               type="file"
-//               {...register("image")}
-//               className="file-input file-input-bordered w-full"
-//             />
-//           </div>
-
-//           {/* Blood Group */}
-//           <div>
-//             <label className="label">Blood Group</label>
-//             <select
-//               {...register("bloodGroup")}
-//               className="select select-bordered w-full"
-//             >
-//               <option value="">Select Blood Group</option>
-//               <option>A+</option>
-//               <option>A-</option>
-//               <option>B+</option>
-//               <option>B-</option>
-//               <option>AB+</option>
-//               <option>AB-</option>
-//               <option>O+</option>
-//               <option>O-</option>
-//             </select>
-//           </div>
-
-//           {/* District */}
-//           <div>
-//             <label className="label">District</label>
-//             <select
-//               {...register("district")}
-//               className="select select-bordered w-full"
-//             >
-//               <option value="">Select District</option>
-//             </select>
-//           </div>
-
-//           {/* Upazila */}
-//           <div>
-//             <label className="label">Upazila</label>
-//             <select
-//               {...register("upozila")}
-//               className="select select-bordered w-full"
-//             >
-//               <option value="">Select Upazila</option>
-//             </select>
-//           </div>
-
-//           {/* Password */}
-//           <div>
-//             <label className="label">Password</label>
-//             <input
-//               {...register("password",{
-//                 required: true,
-//                 minLength:6,
-//               })}
-//               type="password"
-//               className="input input-bordered w-full"
-//               placeholder="Password"
-//             />
-//           </div>
-
-//           {/* Confirm Password */}
-//           <div>
-//             <label className="label">Confirm Password</label>
-//             <input
-//               type="password"
-//               {...register("confirmPassword")}
-//               className="input input-bordered w-full"
-//               placeholder="Confirm Password"
-//             />
-//           </div>
-
-//           <button className="bg-red-500 text-white py-3 rounded-md font-semibold hover:bg-red-600 transition w-full mt-4">
-//             Register
-//           </button>
-
-//           <p className="text-center mt-4">
-//             Already have an account? Register Naw !
-//             <a href="/login" className="text-red-500 underline">
-//               Login
-//             </a>
-//           </p>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Register;

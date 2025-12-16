@@ -1,104 +1,107 @@
-import React from 'react';
-import Logo from '../../../components/Logo/Logo';
-import { Link, NavLink } from 'react-router';
-import useAuth from '../../../hooks/useAuth';
-import { a } from 'framer-motion/client';
+import React from "react";
+import Logo from "../../../components/Logo/Logo";
+import { Link, NavLink } from "react-router";
+import useAuth from "../../../hooks/useAuth";
+import { MdDashboard, MdLogout } from "react-icons/md";
 
 const NavBar = () => {
+  const { user, logOut } = useAuth();
 
-  const {user, logOut} = useAuth();
+  const handleLogOut = () => {
+    logOut().catch(console.log);
+  };
 
-  const handleLogOut = () =>{
-    logOut()
-    .then()
-    .catch(error =>{
-      console.log(error)
-    })
-  }
+  return (
+    <div className="navbar bg-base-100 shadow-sm">
+      {/* LEFT */}
+      <div className="navbar-start">
+        <div className="dropdown">
+          <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
+            ☰
+          </div>
+          <ul
+            tabIndex={0}
+            className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-3 w-52 p-2 shadow"
+          >
+            <li>
+              <NavLink to="/">Home</NavLink>
+            </li>
+            <li>
+              <NavLink to="/donation-requests">Donation Requests</NavLink>
+            </li>
 
-    const links = (
-      <>
-        <li>
-          <NavLink to="/">Home</NavLink>
-        </li>
-        <li>
-          <NavLink to="/donors">Donation Requests</NavLink>
-        </li>
+            {user && (
+              <li>
+                <NavLink to="/funding">Funding</NavLink>
+              </li>
+            )}
+          </ul>
+        </div>
 
-        <li>
-          <NavLink to="/become-donor">Funding</NavLink>
-        </li>
+        <Link to="/" className="flex items-center gap-2">
+          <Logo className="w-10 h-10" />
+          <span className="font-bold text-xl">DonateBlood</span>
+        </Link>
+      </div>
 
-        <li>
-          <NavLink to="/become-donor">Search</NavLink>
-        </li>
-        <li>
-          <NavLink to="/become-donor"></NavLink>
-        </li>
-      </>
-    );
+      {/* CENTER */}
+      <div className="navbar-center hidden lg:flex">
+        <ul className="menu menu-horizontal px-1">
+          <li>
+            <NavLink to="/">Home</NavLink>
+          </li>
+          <li>
+            <NavLink to="/donation-requests">Donation Requests</NavLink>
+          </li>
 
+          {user && (
+            <li>
+              <NavLink to="/funding">Funding</NavLink>
+            </li>
+          )}
+        </ul>
+      </div>
 
-    return (
-      <div className="navbar bg-base-100 shadow-sm">
-        <div className="navbar-start">
-          <div className="dropdown">
-            <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h8m-8 6h16"
-                />
-              </svg>
-            </div>
+      {/* RIGHT */}
+      <div className="navbar-end">
+        {!user ? (
+          <Link to="/login" className="btn">
+            Login
+          </Link>
+        ) : (
+          <div className="dropdown dropdown-end">
+            <img
+              tabIndex={0}
+              className="w-10 h-10 rounded-full border border-red-400 cursor-pointer"
+              src={user.photoURL || "https://i.ibb.co/2d0YjQk/avatar.png"}
+              alt="user"
+            />
             <ul
-              tabIndex="-1"
-              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+              tabIndex={0}
+              className="dropdown-content menu bg-base-100 rounded-box w-52 shadow"
             >
-              {links}
+              <li>
+                <Link to="/dashboard" className="flex items-center gap-2">
+                  <MdDashboard className="text-lg" />
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <button
+                  onClick={handleLogOut}
+                  className="flex items-center gap-2 text-red-500"
+                >
+                  <MdLogout className="text-lg" />
+                  Logout
+                </button>
+              </li>
             </ul>
           </div>
-          <a className="btn btn-ghost text-xl">DonateBlood</a>
-          <Logo className="w-12 h-12" />
-          {/* <div>
-            <Logo />
-            <p className="font-bold text-lg mt-2">
-              Blood Donation 
-            </p>
-          </div> */}
-        </div>
-        <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal px-1">{links}</ul>
-        </div>
-        <div className="navbar-end">
-          {user ? 
-            <a onClick={handleLogOut} className="btn">Log Out</a>
-           : 
-            <Link className="btn" to='/login'>Login</Link>
-          }
-        </div>
-        {/* <NavLink
-          to="/login"
-          className="btn hover:text-red-400 transition cursor-pointer"
-        >
-          Login
-        </NavLink>
-        <NavLink
-          to="/register"
-          className="btn hover:text-red-400 transition cursor-pointer"
-        >
-          Register
-        </NavLink> */}
+        )}
       </div>
-    );
+    </div>
+  );
 };
 
 export default NavBar;
+
