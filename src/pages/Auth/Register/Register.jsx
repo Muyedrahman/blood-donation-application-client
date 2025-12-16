@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
-import Swal from "sweetalert2";
 import axios from "axios";
 import useAuth from "../../../hooks/useAuth";
+import Swal from "sweetalert2";
 
 const Register = () => {
   const { districts, upazilas } = useLoaderData();
@@ -61,6 +61,7 @@ const Register = () => {
 
       // 4. Save User to MongoDB
       const newUser = {
+
         name: data.name,
         email: data.email,
         bloodGroup: data.bloodGroup,
@@ -145,6 +146,7 @@ const Register = () => {
             <option>AB-</option>
             <option>O+</option>
             <option>O-</option>
+            
           </select>
 
           {/* District */}
