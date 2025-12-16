@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
+import Swal from "sweetalert2";
 import axios from "axios";
 import useAuth from "../../../hooks/useAuth";
-import SocialLogin from "../SocialLogin/SocialLogin";
 
 const Register = () => {
   const { districts, upazilas } = useLoaderData();
-
-  //  JSON ar modda main --------> data
   const districtList = districts[2].data;
   const upazilaList = upazilas[2].data;
 
@@ -18,55 +16,85 @@ const Register = () => {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm();
-
-  const password = watch("password");
+  const password = useWatch({ control, name: "password" });
 
   const { registerUser, updateUserProfile } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  //  a. District select ------> b.Upazila filter
+  // Filter Upazilas based on selected District
   useEffect(() => {
     if (!selectedDistrict) {
       setFilteredUpazilas([]);
       return;
     }
-
     const district = districtList.find((d) => d.name === selectedDistrict);
-
     if (district) {
       const matched = upazilaList.filter((u) => u.district_id === district.id);
       setFilteredUpazilas(matched);
     }
-  }, [selectedDistrict]);
+  }, [selectedDistrict, districtList, upazilaList]);
 
-  const handleRegistration = (data) => {
+  const handleRegistration = async (data) => {
     const imageFile = data.avatar[0];
 
-    registerUser(data.email, data.password)
-      .then(() => {
-        const formData = new FormData();
-        formData.append("image", imageFile);
+    try {
+      // 1. Create Firebase user
+      await registerUser(data.email, data.password);
 
-        const imgURL = `https://api.imgbb.com/1/upload?key=${
-          import.meta.env.VITE_image_host_key
-        }`;
+      // 2. Upload Avatar to imgBB
+      const formData = new FormData();
+      formData.append("image", imageFile);
+      const imgURL = `https://api.imgbb.com/1/upload?key=${
+        import.meta.env.VITE_image_host_key
+      }`;
+      const res = await axios.post(imgURL, formData);
 
-        axios.post(imgURL, formData).then((res) => {
-          const profile = {
-            displayName: data.name,
-            photoURL: res.data.data.url,
-          };
+      // 3. Update Firebase Profile
+      await updateUserProfile({
+        displayName: data.name,
+        photoURL: res.data.data.url,
+      });
 
-          updateUserProfile(profile).then(() => {
-            navigate(location.state || "/");
-          });
+      // 4. Save User to MongoDB
+      const newUser = {
+        name: data.name,
+        email: data.email,
+        bloodGroup: data.bloodGroup,
+        district: data.district,
+        upazila: data.upazila,
+        role: "donor", // default role
+        status: "active", // default status
+      };
+      await axios.post("http://localhost:3000/donors", newUser);
+
+      // 5. Success Alert
+      Swal.fire({
+        icon: "success",
+        title: "Registration Successful!",
+        text: "Welcome! You can now login or go to dashboard.",
+      });
+      //    dashboard
+      navigate(location.state || "/");
+    } catch (err) {
+      console.log(err);
+      if (err.code === "auth/email-already-in-use") {
+        Swal.fire({
+          icon: "error",
+          title: "Email Already Exists",
+          text: "This email is already registered. Please login!",
         });
-      })
-      .catch((err) => console.log(err));
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Registration Failed",
+          text: "Something went wrong. Try again.",
+        });
+      }
+    }
   };
 
   return (
@@ -92,6 +120,9 @@ const Register = () => {
             className="input input-bordered w-full"
             placeholder="Email"
           />
+          {errors.email && (
+            <p className="text-red-500">{errors.email.message}</p>
+          )}
 
           {/* Avatar */}
           <input
@@ -183,8 +214,6 @@ const Register = () => {
             </Link>
           </p>
         </form>
-
-        <SocialLogin />
       </div>
     </div>
   );
