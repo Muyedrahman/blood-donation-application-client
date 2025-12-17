@@ -79,7 +79,7 @@ const Register = () => {
         text: "Welcome! You can now login or go to dashboard.",
       });
       //    dashboard
-      navigate(location.state || "/");
+      navigate(location.state || "/dashboard");
     } catch (err) {
       console.log(err);
       if (err.code === "auth/email-already-in-use") {
